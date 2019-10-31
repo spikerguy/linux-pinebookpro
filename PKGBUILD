@@ -19,44 +19,15 @@ makedepends=('xmlto' 'docbook-xsl' 'kmod' 'inetutils' 'bc' 'git' 'uboot-tools' '
 options=('!strip')
 source=("https://github.com/mrfixit2001/rockchip-kernel/archive/${_commit}.tar.gz"
         'config'
-        'kernel.its'
-        'kernel.keyblock'
-        'kernel_data_key.vbprivk'
         'linux.preset'
-        '99-linux.hook'
-        '0001-bootsplash.patch'
-        '0002-bootsplash.patch'
-        '0003-bootsplash.patch'
-        '0004-bootsplash.patch'
-        '0005-bootsplash.patch'
-        '0006-bootsplash.patch'
-        '0007-bootsplash.patch'
-        '0008-bootsplash.patch'
-        '0009-bootsplash.patch'
-        '0010-bootsplash.patch'
-        '0011-bootsplash.patch'
-        '0012-bootsplash.patch'
-        '0013-bootsplash.patch')
-md5sums=('847ea7f473798fd9e8b1cbdcb1edc686'
-         'e33033b8c7739e0ef129722c65a16071'
-         '11a4f35c50f0bde59c30182aa7b797b7'
-         '61c5ff73c136ed07a7aadbf58db3d96a'
-         '584777ae88bce2c5659960151b64c7d8'
-         '57b984c049885b5c0c5adf40bb406ff6'
-         '1d4477026533efaa0358a40855d50a83'
-         'f13cfcd8a4667ecca68bccefee4b8283'
-         'b4acd66a564af83b5409738c40b4a566'
-         'a6407dceae1838f5aa27450401a91be6'
-         'cb78b1c11b917a4d31c4b1567183b76f'
-         '3efea575da7f02ba94789d3b6b81e11f'
-         '2529ad13791b259d80c9d5d702187a65'
-         'efd2367798cc4eab0e15fc0ae44fb003'
-         '50255aac36e002afa477e4527a0550af'
-         '6b6def41b404422dc04b39e2f1adffc8'
-         '1922e3a7727d2bf51641b98d6d354738'
-         'd6b7e4e43e42128cf950251e0d0aee23'
-         'ecfd8a30c480149005fcf349e4d06f4b'
-         '2ead9aa2df230c83539e3ebf6b796b18')
+        '90-linux.hook'
+        '60-linux.hook')
+md5sums=('5754733253086845e774cd8a00088715'
+         '99b4e053dbe3c05d3e6b40323ba33fb0'
+         'd9de023095d119a809316991693c7768'
+         '3dc88030a8f2f5a5f97266d99b149f77'
+         'ce6c81ad1ad1f8b333fd6077d47abdaf'
+         )
 
 prepare() {
   cd "${srcdir}/${_srcname}"
@@ -125,7 +96,7 @@ _package() {
   depends=('coreutils' 'linux-firmware' 'kmod' 'mkinitcpio>=0.7')
   optdepends=('crda: to set the correct wireless channels of your country')
   provides=('kernel26' "linux=${pkgver}")
-  replaces=('linux-armv8-rc')
+  #replaces=('linux-armv8-rc')
   conflicts=('linux')
   backup=("etc/mkinitcpio.d/${pkgbase}.preset")
   install=${pkgname}.install
@@ -139,47 +110,45 @@ _package() {
   _basekernel=${_kernver%%-*}
   _basekernel=${_basekernel%.*}
 
-  mkdir -p "${pkgdir}"/{lib/modules,lib/firmware}
-  make INSTALL_MOD_PATH="${pkgdir}" modules_install
+  mkdir -p "${pkgdir}"/{boot,usr/lib/modules,usr/lib/firmware}
+  make INSTALL_MOD_PATH="${pkgdir}/usr" modules_install
   make INSTALL_DTBS_PATH="${pkgdir}/boot/dtbs" dtbs_install
   cp arch/$KARCH/boot/Image{,.gz} "${pkgdir}/boot"
+  
+   # make room for external modules
+  local _extramodules="extramodules-${_basekernel}${_kernelname}"
+  ln -s "../${_extramodules}" "${pkgdir}/usr/lib/modules/${_kernver}/extramodules"
 
-  # set correct depmod command for install
-  sed \
-    -e  "s/KERNEL_NAME=.*/KERNEL_NAME=${_kernelname}/g" \
-    -e  "s/KERNEL_VERSION=.*/KERNEL_VERSION=${_kernver}/g" \
-    -i "${startdir}/${pkgname}.install"
-
-  # install mkinitcpio preset file for kernel
-  install -D -m644 "${srcdir}/linux.preset" "${pkgdir}/etc/mkinitcpio.d/${pkgbase}.preset"
-  sed \
-    -e "1s|'linux.*'|'${pkgbase}'|" \
-    -e "s|ALL_kver=.*|ALL_kver=\"${_kernver}\"|" \
-    -i "${pkgdir}/etc/mkinitcpio.d/${pkgbase}.preset"
-
-  # install pacman hook for initramfs regeneration
-  sed "s|%PKGBASE%|${pkgbase}|g" "${srcdir}/99-linux.hook" |
-    install -D -m644 /dev/stdin "${pkgdir}/usr/share/libalpm/hooks/99-${pkgbase}.hook"
+ # add real version for building modules and running depmod from hook
+  echo "${_kernver}" |
+    install -Dm644 /dev/stdin "${pkgdir}/usr/lib/modules/${_extramodules}/version"
+    
 
   # remove build and source links
-  rm -f "${pkgdir}"/lib/modules/${_kernver}/{source,build}
-  # remove the firmware
-  rm -rf "${pkgdir}/lib/firmware"
-  # make room for external modules
-  ln -s "../extramodules-${_basekernel}${_kernelname:--ARCH}" "${pkgdir}/lib/modules/${_kernver}/extramodules"
-  # add real version for building modules and running depmod from post_install/upgrade
-  mkdir -p "${pkgdir}/lib/modules/extramodules-${_basekernel}${_kernelname:--ARCH}"
-  echo "${_kernver}" > "${pkgdir}/lib/modules/extramodules-${_basekernel}${_kernelname:--ARCH}/version"
+  rm "${pkgdir}"/usr/lib/modules/${_kernver}/{source,build}
+ 
 
   # Now we call depmod...
   depmod -b "$pkgdir" -F System.map "$_kernver"
+ 
 
-  # move module tree /lib -> /usr/lib
-  mkdir -p "${pkgdir}/usr"
-  mv "$pkgdir/lib" "$pkgdir/usr"
+  # sed expression for following substitutions
+  local _subst="
+    s|%PKGBASE%|${pkgbase}|g
+    s|%KERNVER%|${_kernver}|g
+    s|%EXTRAMODULES%|${_extramodules}|g
+  "
 
-  # add vmlinux
-  install -D -m644 vmlinux "${pkgdir}/usr/lib/modules/${_kernver}/build/vmlinux"
+  # install mkinitcpio preset file
+  sed "${_subst}" ../linux.preset |
+    install -Dm644 /dev/stdin "${pkgdir}/etc/mkinitcpio.d/${pkgbase}.preset"
+
+  # install pacman hooks
+  sed "${_subst}" ../60-linux.hook |
+    install -Dm644 /dev/stdin "${pkgdir}/usr/share/libalpm/hooks/60-${pkgbase}.hook"
+  sed "${_subst}" ../90-linux.hook |
+    install -Dm644 /dev/stdin "${pkgdir}/usr/share/libalpm/hooks/90-${pkgbase}.hook"
+
 }
 
 _package-headers() {
