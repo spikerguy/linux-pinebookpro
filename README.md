@@ -1,2 +1,2 @@
 # linux-pinebookpro
-Linux Kernel for Pinebook Pro
+Manjaro Package - Linux Kernel for Pinebook Pro
