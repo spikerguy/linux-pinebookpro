@@ -1,54 +1,84 @@
-# AArch64 multi-platform with Pinebook Pro support
+# AArch64 Pinebook Pro
+# Contributor: Kevin Mihelich <kevin@archlinuxarm.org>
 # Maintainer: Dan Johansen <strit@manjaro.org>
-# Maintainer: Spikerguy <tech@fkardame.com>
-# Contributor: MrFixit
-
-buildarch=8
 
 pkgbase=linux-pinebookpro
-_commit=b9a54c00fb0c85bed0b6c3de25b01effaa498511
-_srcname=rockchip-kernel-${_commit}
+_pkgname=linux-pinebook-pro
+_srcname=linux-pinebook-pro
 _kernelname=${pkgbase#linux}
-_desc="AArch64 with PineBook Pro Support"
-pkgver=4.4.196
-pkgrel=1
+_desc="AArch64 Pinebook Pro kernel"
+pkgver=5.5.0
+pkgrel=3
 arch=('aarch64')
-url="https://github.com/mrfixit2001/rockchip-kernel"
+url="https://gitlab.manjaro.org/tsys/${_pkgname}"
 license=('GPL2')
 makedepends=('xmlto' 'docbook-xsl' 'kmod' 'inetutils' 'bc' 'git' 'uboot-tools' 'dtc')
 options=('!strip')
-source=("https://github.com/mrfixit2001/rockchip-kernel/archive/${_commit}.tar.gz"
+_commit=66d7a788eda490a15e64ddf3ebdff4b5f2f1b60f
+source=("https://gitlab.manjaro.org/tsys/linux-pinebook-pro/-/archive/${_commit}/${_pkgname}-${_commit}.tar.gz"
+        '0001-net-smsc95xx-Allow-mac-address-to-be-set-as-a-parame.patch'
+        '0002-raid6-add-Kconfig-option-to-skip-raid6-benchmarking.patch'
         'config'
         'linux.preset'
+        '60-linux.hook'
         '90-linux.hook'
-        '60-linux.hook')
-md5sums=('5754733253086845e774cd8a00088715'
-         '99b4e053dbe3c05d3e6b40323ba33fb0'
-         'd9de023095d119a809316991693c7768'
-         '3dc88030a8f2f5a5f97266d99b149f77'
+        '0001-bootsplash.patch'
+        '0002-bootsplash.patch'
+        '0003-bootsplash.patch'
+        '0004-bootsplash.patch'
+        '0005-bootsplash.patch'
+        '0006-bootsplash.patch'
+        '0007-bootsplash.patch'
+        '0008-bootsplash.patch'
+        '0009-bootsplash.patch'
+        '0010-bootsplash.patch'
+        '0011-bootsplash.patch'
+        '0012-bootsplash.patch')
+md5sums=('5fc963d2a8daeef58098fb8d85a33f7d'
+         '6ee347975dca719ecd63a846cc5983b2'
+         '55f6a3d6b10794c9583334931f842637'
+         '1f5bb0edc21bed6c8f054f5d6046ae71'
+         '86d4a35722b5410e3b29fc92dae15d4b'
          'ce6c81ad1ad1f8b333fd6077d47abdaf'
-         )
+         '3dc88030a8f2f5a5f97266d99b149f77'
+         'f13cfcd8a4667ecca68bccefee4b8283'
+         'b4acd66a564af83b5409738c40b4a566'
+         'a6407dceae1838f5aa27450401a91be6'
+         'cb78b1c11b917a4d31c4b1567183b76f'
+         '3efea575da7f02ba94789d3b6b81e11f'
+         '2529ad13791b259d80c9d5d702187a65'
+         'efd2367798cc4eab0e15fc0ae44fb003'
+         '50255aac36e002afa477e4527a0550af'
+         '6b6def41b404422dc04b39e2f1adffc8'
+         '1922e3a7727d2bf51641b98d6d354738'
+         'd6b7e4e43e42128cf950251e0d0aee23'
+         'ecfd8a30c480149005fcf349e4d06f4b')
 
 prepare() {
-  cd "${srcdir}/${_srcname}"
+  cd ${_srcname}-${_commit}
+  #sed -i s/"EXTRAVERSION = -rc7"/"EXTRAVERSION ="/ Makefile
+  # add upstream patch
+  #git apply --whitespace=nowarn ../patch-${pkgver}
 
-  # Manjaro-ARM patches
+  # ALARM patches
+  patch -Np1 -i "${srcdir}/0001-net-smsc95xx-Allow-mac-address-to-be-set-as-a-parame.patch"
+  patch -Np1 -i "${srcdir}/0002-raid6-add-Kconfig-option-to-skip-raid6-benchmarking.patch"
+  
+  # Manjaro ARM Patches
   # Bootsplash patches
-  #patch -Np1 -i "${srcdir}/0001-bootsplash.patch"
-  #patch -Np1 -i "${srcdir}/0002-bootsplash.patch"
-  #patch -Np1 -i "${srcdir}/0003-bootsplash.patch"
-  #patch -Np1 -i "${srcdir}/0004-bootsplash.patch"
-  #patch -Np1 -i "${srcdir}/0005-bootsplash.patch"
-  #patch -Np1 -i "${srcdir}/0006-bootsplash.patch"
-  #patch -Np1 -i "${srcdir}/0007-bootsplash.patch"
-  #patch -Np1 -i "${srcdir}/0008-bootsplash.patch"
-  #patch -Np1 -i "${srcdir}/0009-bootsplash.patch"
-  #patch -Np1 -i "${srcdir}/0010-bootsplash.patch"
-  #patch -Np1 -i "${srcdir}/0011-bootsplash.patch"
-  #patch -Np1 -i "${srcdir}/0012-bootsplash.patch"
-  #git apply -p1 < "${srcdir}/0013-bootsplash.patch"
-  #git apply ../0001-bootsplash-add-new-files.patch
-  #git apply ../0002-bootsplash-modify-existing-files.patch
+  patch -Np1 -i "${srcdir}/0001-bootsplash.patch"
+  patch -Np1 -i "${srcdir}/0002-bootsplash.patch"
+  patch -Np1 -i "${srcdir}/0003-bootsplash.patch"
+  patch -Np1 -i "${srcdir}/0004-bootsplash.patch"
+  patch -Np1 -i "${srcdir}/0005-bootsplash.patch"
+  patch -Np1 -i "${srcdir}/0006-bootsplash.patch"
+  patch -Np1 -i "${srcdir}/0007-bootsplash.patch"
+  patch -Np1 -i "${srcdir}/0008-bootsplash.patch"
+  patch -Np1 -i "${srcdir}/0009-bootsplash.patch"
+  patch -Np1 -i "${srcdir}/0010-bootsplash.patch"
+  patch -Np1 -i "${srcdir}/0011-bootsplash.patch"
+  patch -Np1 -i "${srcdir}/0012-bootsplash.patch"
+  
   cat "${srcdir}/config" > ./.config
 
   # add pkgrel to extraversion
@@ -59,7 +89,7 @@ prepare() {
 }
 
 build() {
-  cd "${srcdir}/${_srcname}"
+  cd ${_srcname}-${_commit}
 
   # get kernel version
   make prepare
@@ -86,6 +116,7 @@ build() {
 
   # build!
   unset LDFLAGS
+  #make rockchip_linux_defconfig
   make ${MAKEFLAGS} Image Image.gz modules
   # Generate device tree blobs with symbols to support applying device tree overlays in U-Boot
   make ${MAKEFLAGS} DTC_FLAGS="-@" dtbs
@@ -96,12 +127,12 @@ _package() {
   depends=('coreutils' 'linux-firmware' 'kmod' 'mkinitcpio>=0.7')
   optdepends=('crda: to set the correct wireless channels of your country')
   provides=('kernel26' "linux=${pkgver}")
-  #replaces=('linux-armv8-rc')
+  replaces=('linux-armv8')
   conflicts=('linux')
   backup=("etc/mkinitcpio.d/${pkgbase}.preset")
   install=${pkgname}.install
 
-  cd "${srcdir}/${_srcname}"
+  cd ${_srcname}-${_commit}
 
   KARCH=arm64
 
@@ -110,27 +141,27 @@ _package() {
   _basekernel=${_kernver%%-*}
   _basekernel=${_basekernel%.*}
 
-  mkdir -p "${pkgdir}"/{boot,usr/lib/modules,usr/lib/firmware}
+  mkdir -p "${pkgdir}"/{boot,usr/lib/modules}
   make INSTALL_MOD_PATH="${pkgdir}/usr" modules_install
   make INSTALL_DTBS_PATH="${pkgdir}/boot/dtbs" dtbs_install
   cp arch/$KARCH/boot/Image{,.gz} "${pkgdir}/boot"
-  
-   # make room for external modules
+
+  # make room for external modules
   local _extramodules="extramodules-${_basekernel}${_kernelname}"
   ln -s "../${_extramodules}" "${pkgdir}/usr/lib/modules/${_kernver}/extramodules"
 
- # add real version for building modules and running depmod from hook
+  # add real version for building modules and running depmod from hook
   echo "${_kernver}" |
     install -Dm644 /dev/stdin "${pkgdir}/usr/lib/modules/${_extramodules}/version"
-    
 
   # remove build and source links
   rm "${pkgdir}"/usr/lib/modules/${_kernver}/{source,build}
- 
 
-  # Now we call depmod...
-  depmod -b "$pkgdir" -F System.map "$_kernver"
- 
+  # now we call depmod...
+  depmod -b "${pkgdir}/usr" -F System.map "${_kernver}"
+
+  # add vmlinux
+  install -Dt "${pkgdir}/usr/lib/modules/${_kernver}/build" -m644 vmlinux
 
   # sed expression for following substitutions
   local _subst="
@@ -148,120 +179,74 @@ _package() {
     install -Dm644 /dev/stdin "${pkgdir}/usr/share/libalpm/hooks/60-${pkgbase}.hook"
   sed "${_subst}" ../90-linux.hook |
     install -Dm644 /dev/stdin "${pkgdir}/usr/share/libalpm/hooks/90-${pkgbase}.hook"
-
 }
 
 _package-headers() {
   pkgdesc="Header files and scripts for building modules for linux kernel - ${_desc}"
   provides=("linux-headers=${pkgver}")
-  replaces=('linux-armv8-rc-headers')
   conflicts=('linux-headers')
 
-  install -dm755 "${pkgdir}/usr/lib/modules/${_kernver}"
+  cd ${_srcname}-${_commit}
+  local _builddir="${pkgdir}/usr/lib/modules/${_kernver}/build"
 
-  cd "${srcdir}/${_srcname}"
-  install -D -m644 Makefile \
-    "${pkgdir}/usr/lib/modules/${_kernver}/build/Makefile"
-  install -D -m644 kernel/Makefile \
-    "${pkgdir}/usr/lib/modules/${_kernver}/build/kernel/Makefile"
-  install -D -m644 .config \
-    "${pkgdir}/usr/lib/modules/${_kernver}/build/.config"
+  install -Dt "${_builddir}" -m644 Makefile .config Module.symvers
+  install -Dt "${_builddir}/kernel" -m644 kernel/Makefile
 
-  mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/include"
+  mkdir "${_builddir}/.tmp_versions"
 
-  for i in acpi asm-generic clocksource config crypto drm generated keys linux \
-    math-emu media net pcmcia scsi soc sound trace uapi video xen; do
-    cp -a include/${i} "${pkgdir}/usr/lib/modules/${_kernver}/build/include/"
-  done
+  cp -t "${_builddir}" -a include scripts
 
-  # copy arch includes for external modules
-  mkdir -p ${pkgdir}/usr/lib/modules/${_kernver}/build/arch/$KARCH
-  cp -a arch/$KARCH/include ${pkgdir}/usr/lib/modules/${_kernver}/build/arch/$KARCH/
+  install -Dt "${_builddir}/arch/${KARCH}" -m644 arch/${KARCH}/Makefile
+  install -Dt "${_builddir}/arch/${KARCH}/kernel" -m644 arch/${KARCH}/kernel/asm-offsets.s arch/$KARCH/kernel/module.lds
 
-  # copy files necessary for later builds, like nvidia and vmware
-  cp Module.symvers "${pkgdir}/usr/lib/modules/${_kernver}/build"
-  cp -a scripts "${pkgdir}/usr/lib/modules/${_kernver}/build"
+  cp -t "${_builddir}/arch/${KARCH}" -a arch/${KARCH}/include
+  mkdir -p "${_builddir}/arch/arm"
+  cp -t "${_builddir}/arch/arm" -a arch/arm/include
 
-  # fix permissions on scripts dir
-  chmod og-w -R "${pkgdir}/usr/lib/modules/${_kernver}/build/scripts"
-  mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/.tmp_versions"
+  install -Dt "${_builddir}/drivers/md" -m644 drivers/md/*.h
+  install -Dt "${_builddir}/net/mac80211" -m644 net/mac80211/*.h
 
-  mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/arch/${KARCH}/kernel"
-
-  cp arch/${KARCH}/Makefile "${pkgdir}/usr/lib/modules/${_kernver}/build/arch/${KARCH}/"
-
-  cp arch/${KARCH}/kernel/asm-offsets.s "${pkgdir}/usr/lib/modules/${_kernver}/build/arch/${KARCH}/kernel/"
-
-  # copy module linker script
-  cp arch/$KARCH/kernel/module.lds "${pkgdir}/usr/lib/modules/${_kernver}/build/arch/${KARCH}/kernel/"
-
-  # add dm headers
-  mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/md"
-  cp drivers/md/*.h "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/md"
-
-  # add inotify.h
-  mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/include/linux"
-  cp include/linux/inotify.h "${pkgdir}/usr/lib/modules/${_kernver}/build/include/linux/"
-
-  # add wireless headers
-  mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/net/mac80211/"
-  cp net/mac80211/*.h "${pkgdir}/usr/lib/modules/${_kernver}/build/net/mac80211/"
-
-  # add dvb headers for external modules
-  # in reference to:
-  # http://bugs.archlinux.org/task/9912
-  # mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/dvb-core"
-  # cp drivers/media/dvb-core/*.h "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/dvb-core/"
-  # and...
-  # http://bugs.archlinux.org/task/11194
-  # mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/include/config/dvb/"
-  # cp include/config/dvb/*.h "${pkgdir}/usr/lib/modules/${_kernver}/build/include/config/dvb/"
-
-  # add dvb headers for http://mcentral.de/hg/~mrec/em28xx-new
-  # in reference to:
   # http://bugs.archlinux.org/task/13146
-  # mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/dvb-frontends/"
-  # cp drivers/media/dvb-frontends/lgdt330x.h "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/dvb-frontends/"
-  # mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/i2c/"
-  # cp drivers/media/i2c/msp3400-driver.h "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/i2c/"
+  install -Dt "${_builddir}/drivers/media/i2c" -m644 drivers/media/i2c/msp3400-driver.h
 
-  # add dvb headers
-  # in reference to:
   # http://bugs.archlinux.org/task/20402
-  mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/usb/dvb-usb"
-  cp drivers/media/usb/dvb-usb/*.h "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/usb/dvb-usb/"
-  mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/dvb-frontends"
-  cp drivers/media/dvb-frontends/*.h "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/dvb-frontends/"
-  mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/tuners"
-  cp drivers/media/tuners/*.h "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/tuners/"
+  install -Dt "${_builddir}/drivers/media/usb/dvb-usb" -m644 drivers/media/usb/dvb-usb/*.h
+  install -Dt "${_builddir}/drivers/media/dvb-frontends" -m644 drivers/media/dvb-frontends/*.h
+  install -Dt "${_builddir}/drivers/media/tuners" -m644 drivers/media/tuners/*.h
 
   # add xfs and shmem for aufs building
-  mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/fs/xfs"
-  mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/mm"
+  mkdir -p "${_builddir}"/{fs/xfs,mm}
 
   # copy in Kconfig files
-  for i in $(find . -name "Kconfig*"); do
-    mkdir -p "${pkgdir}"/usr/lib/modules/${_kernver}/build/`echo ${i} | sed 's|/Kconfig.*||'`
-    cp ${i} "${pkgdir}/usr/lib/modules/${_kernver}/build/${i}"
-  done
-
-  chown -R root.root "${pkgdir}/usr/lib/modules/${_kernver}/build"
-  find "${pkgdir}/usr/lib/modules/${_kernver}/build" -type d -exec chmod 755 {} \;
-
-  # strip scripts directory
-  find "${pkgdir}/usr/lib/modules/${_kernver}/build/scripts" -type f -perm -u+w 2>/dev/null | while read binary ; do
-    case "$(file -bi "${binary}")" in
-      *application/x-sharedlib*) # Libraries (.so)
-        /usr/bin/strip ${STRIP_SHARED} "${binary}";;
-      *application/x-archive*) # Libraries (.a)
-        /usr/bin/strip ${STRIP_STATIC} "${binary}";;
-      *application/x-executable*) # Binaries
-        /usr/bin/strip ${STRIP_BINARIES} "${binary}";;
-    esac
-  done
+  find . -name Kconfig\* -exec install -Dm644 {} "${_builddir}/{}" \;
 
   # remove unneeded architectures
-  rm -rf "${pkgdir}"/usr/lib/modules/${_kernver}/build/arch/{alpha,arc,arm,arm26,avr32,blackfin,c6x,cris,frv,h8300,hexagon,ia64,m32r,m68k,m68knommu,metag,mips,microblaze,mn10300,openrisc,parisc,powerpc,ppc,s390,score,sh,sh64,sparc,sparc64,tile,unicore32,um,v850,x86,xtensa}
+  local _arch
+  for _arch in "${_builddir}"/arch/*/; do
+    [[ ${_arch} == */${KARCH}/ || ${_arch} == */arm/ ]] && continue
+    rm -r "${_arch}"
+  done
+
+  # remove files already in linux-docs package
+  rm -r "${_builddir}/Documentation"
+
+  # remove now broken symlinks
+  find -L "${_builddir}" -type l -printf 'Removing %P\n' -delete
+
+  # Fix permissions
+  chmod -R u=rwX,go=rX "${_builddir}"
+
+  # strip scripts directory
+  local _binary _strip
+  while read -rd '' _binary; do
+    case "$(file -bi "${_binary}")" in
+      *application/x-sharedlib*)  _strip="${STRIP_SHARED}"   ;; # Libraries (.so)
+      *application/x-archive*)    _strip="${STRIP_STATIC}"   ;; # Libraries (.a)
+      *application/x-executable*) _strip="${STRIP_BINARIES}" ;; # Binaries
+      *) continue ;;
+    esac
+    /usr/bin/strip ${_strip} "${_binary}"
+  done < <(find "${_builddir}/scripts" -type f -perm -u+w -print0 2>/dev/null)
 }
 
 pkgname=("${pkgbase}" "${pkgbase}-headers")
@@ -270,4 +255,3 @@ for _p in ${pkgname[@]}; do
     _package${_p#${pkgbase}}
   }"
 done
- 
